@@ -1,0 +1,40 @@
+{
+  "entities": {
+    "products": {
+      "title": "Products",
+      "description": "Store products for SeedHaven",
+      "properties": {
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "price": { "type": "number" },
+        "originalPrice": { "type": "number" },
+        "cashback": { "type": "number" },
+        "stock": { "type": "number" },
+        "rating": { "type": "number" },
+        "reviewsCount": { "type": "number" },
+        "image": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "description": { "type": "string" },
+        "germinationDays": { "type": "string" },
+        "season": { "type": "string" },
+        "packSize": { "type": "string" },
+        "isPopular": { "type": "boolean" },
+        "isNew": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "price", "image", "category"]
+    },
+    "orders": {
+      "title": "Orders",
+      "description": "Customer Orders",
+      "properties": {
+        "customerName": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["customerName", "phone", "address"]
+    }
+  }
+}
