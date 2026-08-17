@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seed Haven BD - Premium Admin Panel</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{
+      --brand:#0f5132;
+      --brand2:#0a3b25;
+      --accent:#22c55e;
+      --soft:#ecfdf5;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Hind Siliguri',sans-serif;background:#f4f7f5;color:#13231b}
+    .glass{background:rgba(255,255,255,.92);backdrop-filter:blur(12px)}
+    .card{background:#fff;border:1px solid #e7efe9;border-radius:20px;box-shadow:0 10px 30px rgba(15,81,50,.06)}
+    .sidebar-scroll::-webkit-scrollbar{width:6px}
+    .sidebar-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:999px}
+    .nav-item.active{background:linear-gradient(135deg,#1f8b55,#166b43);color:#fff;box-shadow:0 8px 22px rgba(22,107,67,.35)}
+    .nav-item:not(.active){color:#d4f3df}
+    .nav-item:not(.active):hover{background:rgba(255,255,255,.08);color:#fff}
+    .view{display:none}
+    .view.active{display:block}
+    .field{width:100%;border:1px solid #dfe8e2;background:#fff;border-radius:12px;padding:.72rem .85rem;font-size:.88rem;outline:none}
+    .field:focus{border-color:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.12)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;border-radius:12px;font-weight:700;font-size:.82rem;padding:.7rem 1rem;transition:.2s}
+    .btn-primary{background:#15803d;color:#fff}.btn-primary:hover{background:#166534}
+    .btn-soft{background:#ecfdf5;color:#166534;border:1px solid #bbf7d0}.btn-soft:hover{background:#dcfce7}
+    .btn-danger{background:#fff1f2;color:#be123c;border:1px solid #fecdd3}.btn-danger:hover{background:#ffe4e6}
+    .pill{display:inline-flex;align-items:center;border-radius:999px;padding:.25rem .55rem;font-size:.72rem;font-weight:700}
+    .table-wrap{overflow:auto;border:1px solid #e8efea;border-radius:16px}
+    table{width:100%;border-collapse:collapse}
+    th{background:#f7faf8;text-align:left;color:#5d6f64;font-size:.75rem;font-weight:700;padding:.8rem;white-space:nowrap}
+    td{padding:.8rem;border-top:1px solid #edf2ee;font-size:.82rem;vertical-align:middle}
+    .modal{display:none}.modal.open{display:flex}
+    .toast{transform:translateY(-12px);opacity:0;pointer-events:none;transition:.25s}
+    .toast.show{transform:translateY(0);opacity:1}
+    @media (max-width:1023px){
+      #sidebar{transform:translateX(-100%);transition:.25s}
+      #sidebar.open{transform:translateX(0)}
+      #mainShell{margin-left:0!important}
+    }
+  </style>
+</head>
+<body>
+  <div id="toast" class="toast fixed top-4 right-4 z-[100] max-w-sm rounded-2xl bg-slate-900 text-white px-4 py-3 shadow-2xl text-sm flex items-center gap-2">
+    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toastText">সম্পন্ন হয়েছে</span>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-[270px] bg-gradient-to-b from-emerald-950 via-emerald-900 to-green-950 text-white flex flex-col">
+    <div class="px-5 py-5 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-lime-300/15 border border-lime-200/20 flex items-center justify-center">
+          <i data-lucide="sprout" class="w-6 h-6 text-lime-300"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-[19px] leading-none">Seed Haven BD</h1>
+          <p class="text-[11px] text-emerald-200/70 mt-1">Premium Admin Panel</p>
+        </div>
+      </div>
+    </div>
+
+    <nav id="navMenu" class="sidebar-scroll flex-1 overflow-y-auto px-3 py-4 space-y-1">
+      <button data-view="dashboard" class="nav-item active w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="layout-dashboard" class="w-4 h-4"></i>ড্যাশবোর্ড</button>
+      <div class="px-3 pt-3 pb-1 text-[10px] uppercase tracking-wider text-emerald-300/55">ম্যানেজমেন্ট</div>
+      <button data-view="products" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="package" class="w-4 h-4"></i>প্রোডাক্ট</button>
+      <button data-view="categories" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="grid-2x2" class="w-4 h-4"></i>ক্যাটাগরি</button>
+      <button data-view="orders" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="shopping-cart" class="w-4 h-4"></i>অর্ডার</button>
+      <button data-view="inventory" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="boxes" class="w-4 h-4"></i>স্টক ও ইনভেন্টরি</button>
+      <button data-view="customers" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="users" class="w-4 h-4"></i>কাস্টমার</button>
+      <button data-view="banners" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="images" class="w-4 h-4"></i>ব্যানার / স্লাইডার</button>
+      <button data-view="coupons" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="badge-percent" class="w-4 h-4"></i>কুপন ও অফার</button>
+      <button data-view="reviews" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="star" class="w-4 h-4"></i>রিভিউ</button>
+
+      <div class="px-3 pt-3 pb-1 text-[10px] uppercase tracking-wider text-emerald-300/55">সাইট সেটিংস</div>
+      <button data-view="homepage" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="home" class="w-4 h-4"></i>হোমপেজ</button>
+      <button data-view="delivery" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="truck" class="w-4 h-4"></i>ডেলিভারি ও জোন</button>
+      <button data-view="payment" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="wallet-cards" class="w-4 h-4"></i>পেমেন্ট / COD</button>
+      <button data-view="notice" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="megaphone" class="w-4 h-4"></i>নোটিশ / পপআপ</button>
+      <button data-view="contact" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="phone" class="w-4 h-4"></i>যোগাযোগ ও সোশ্যাল</button>
+      <button data-view="policies" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="file-text" class="w-4 h-4"></i>পলিসি পেজ</button>
+      <button data-view="seo" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="search-check" class="w-4 h-4"></i>SEO সেটিংস</button>
+      <button data-view="store" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="settings" class="w-4 h-4"></i>স্টোর সেটিংস</button>
+      <button data-view="reports" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="chart-no-axes-combined" class="w-4 h-4"></i>রিপোর্ট</button>
+      <button data-view="admins" class="nav-item w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm font-semibold"><i data-lucide="shield-user" class="w-4 h-4"></i>অ্যাডমিন ও সিকিউরিটি</button>
+    </nav>
+
+    <div class="p-4 border-t border-white/10">
+      <a href="/" class="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-sm font-semibold flex items-center justify-center gap-2">
+        <i data-lucide="external-link" class="w-4 h-4"></i> মেইন ওয়েবসাইট
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div id="mainShell" class="min-h-screen lg:ml-[270px]">
+    <header class="sticky top-0 z-40 glass border-b border-emerald-950/5">
+      <div class="h-16 px-4 sm:px-6 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <button id="menuBtn" class="lg:hidden w-10 h-10 rounded-xl border border-slate-200 bg-white flex items-center justify-center"><i data-lucide="menu" class="w-5 h-5"></i></button>
+          <div class="hidden sm:flex items-center relative w-[360px] max-w-[42vw]">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 text-slate-400"></i>
+            <input id="globalSearch" class="field pl-9 py-2" placeholder="প্রোডাক্ট বা অর্ডার খুঁজুন..." />
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="hidden md:inline-flex pill bg-emerald-50 text-emerald-700 border border-emerald-100"><span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span>Firebase Live</span>
+          <button class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center"><i data-lucide="bell" class="w-4 h-4"></i></button>
+          <div class="flex items-center gap-2 pl-2">
+            <div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">A</div>
+            <div class="hidden sm:block leading-tight"><p class="text-sm font-bold">Admin</p><p class="text-[10px] text-slate-500">Super Admin</p></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="p-4 sm:p-6 lg:p-7 max-w-[1600px] mx-auto">
+      <!-- DASHBOARD -->
+      <section id="view-dashboard" class="view active space-y-6">
+        <div class="card p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-white to-emerald-50">
+          <div>
+            <p class="text-sm text-slate-500">স্বাগতম 👋</p>
+            <h2 class="text-2xl font-bold mt-1">Seed Haven BD Admin Dashboard</h2>
+            <p class="text-sm text-slate-500 mt-1">আপনার স্টোরের বর্তমান অবস্থা এক নজরে দেখুন।</p>
+          </div>
+          <button data-view-jump="products" class="btn btn-primary"><i data-lucide="plus" class="w-4 h-4"></i> নতুন প্রোডাক্ট</button>
+        </div>
+
+        <div class="grid grid-cols-2 xl:grid-cols-6 gap-3">
+          <div class="card p-4"><p class="text-xs text-slate-500">মোট প্রোডাক্ট</p><div class="flex items-center justify-between mt-2"><b id="statProducts" class="text-2xl">0</b><span class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center"><i data-lucide="package" class="w-5 h-5"></i></span></div></div>
+          <div class="card p-4"><p class="text-xs text-slate-500">মোট অর্ডার</p><div class="flex items-center justify-between mt-2"><b id="statOrders" class="text-2xl">0</b><span class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center"><i data-lucide="shopping-cart" class="w-5 h-5"></i></span></div></div>
+          <div class="card p-4"><p class="text-xs text-slate-500">আজকের বিক্রি</p><div class="flex items-center justify-between mt-2"><b id="statTodaySales" class="text-2xl">৳0</b><span class="w-10 h-10 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center"><i data-lucide="banknote" class="w-5 h-5"></i></span></div></div>
+          <div class="card p-4"><p class="text-xs text-slate-500">মোট বিক্রি</p><div class="flex items-center justify-between mt-2"><b id="statSales" class="text-2xl">৳0</b><span class="w-10 h-10 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center"><i data-lucide="trending-up" class="w-5 h-5"></i></span></div></div>
+          <div class="card p-4"><p class="text-xs text-slate-500">Pending</p><div class="flex items-center justify-between mt-2"><b id="statPending" class="text-2xl">0</b><span class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center"><i data-lucide="clock-3" class="w-5 h-5"></i></span></div></div>
+          <div class="card p-4"><p class="text-xs text-slate-500">Low Stock</p><div class="flex items-center justify-between mt-2"><b id="statLowStock" class="text-2xl">0</b><span class="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center"><i data-lucide="triangle-alert" class="w-5 h-5"></i></span></div></div>
+        </div>
+
+        <div class="grid xl:grid-cols-3 gap-5">
+          <div class="card p-5 xl:col-span-2">
+            <div class="flex items-center justify-between mb-4"><h3 class="font-bold">বিক্রয় পরিসংখ্যান</h3><span class="text-xs text-slate-400">গত ৭ দিন</span></div>
+            <div class="h-[300px]"><canvas id="salesChart"></canvas></div>
+          </div>
+          <div class="card p-5">
+            <h3 class="font-bold mb-4">অর্ডার স্ট্যাটাস</h3>
+            <div class="h-[300px]"><canvas id="orderChart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="grid xl:grid-cols-3 gap-5">
+          <div class="card p-5 xl:col-span-2">
+            <div class="flex items-center justify-between mb-4"><h3 class="font-bold">সাম্প্রতিক অর্ডার</h3><button data-view-jump="orders" class="text-sm font-bold text-emerald-700">সব দেখুন →</button></div>
+            <div id="recentOrders" class="space-y-2 text-sm text-slate-500">লোড হচ্ছে...</div>
+          </div>
+          <div class="card p-5">
+            <h3 class="font-bold mb-4">Low Stock Alert</h3>
+            <div id="lowStockList" class="space-y-2 text-sm text-slate-500">লোড হচ্ছে...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PRODUCTS -->
+      <section id="view-products" class="view space-y-5">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div><h2 class="text-2xl font-bold">প্রোডাক্ট ম্যানেজমেন্ট</h2><p class="text-sm text-slate-500 mt-1">Add, edit, delete, price, stock ও SEO পরিচালনা করুন।</p></div>
+          <button id="openProductModal" class="btn btn-primary"><i data-lucide="plus" class="w-4 h-4"></i> নতুন প্রোডাক্ট যোগ</button>
+        </div>
+        <div class="card p-4">
+          <div class="flex flex-col md:flex-row gap-3 mb-4">
+            <input id="productSearch" class="field md:max-w-sm" placeholder="প্রোডাক্ট খুঁজুন..." />
+            <select id="productCategoryFilter" class="field md:max-w-[220px]"><option value="">সব ক্যাটাগরি</option></select>
+          </div>
+          <div id="productsTable"></div>
+        </div>
+      </section>
+
+      <!-- CATEGORIES -->
+      <section id="view-categories" class="view space-y-5">
+        <div class="flex items-center justify-between gap-3"><div><h2 class="text-2xl font-bold">ক্যাটাগরি</h2><p class="text-sm text-slate-500">ফল, ফুল, সবজি, হারবস ও অফার ক্যাটাগরি পরিচালনা করুন।</p></div><button id="openCategoryModal" class="btn btn-primary"><i data-lucide="plus" class="w-4 h-4"></i> ক্যাটাগরি যোগ</button></div>
+        <div id="categoriesGrid" class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4"></div>
+      </section>
+
+      <!-- ORDERS -->
+      <section id="view-orders" class="view space-y-5">
+        <div><h2 class="text-2xl font-bold">অর্ডার ম্যানেজমেন্ট</h2><p class="text-sm text-slate-500">Pending থেকে Delivered পর্যন্ত অর্ডার স্ট্যাটাস পরিচালনা করুন।</p></div>
+        <div class="card p-4">
+          <div class="flex flex-col md:flex-row gap-3 mb-4">
+            <input id="orderSearch" class="field md:max-w-sm" placeholder="Order ID / নাম / ফোন..." />
+            <select id="orderStatusFilter" class="field md:max-w-[220px]">
+              <option value="">সব স্ট্যাটাস</option><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="processing">Processing</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option>
+            </select>
+            <button id="refreshOrders" class="btn btn-soft"><i data-lucide="refresh-cw" class="w-4 h-4"></i> রিফ্রেশ</button>
+          </div>
+          <div id="ordersTable"></div>
+        </div>
+      </section>
+
+      <!-- INVENTORY -->
+      <section id="view-inventory" class="view space-y-5">
+        <div><h2 class="text-2xl font-bold">স্টক ও ইনভেন্টরি</h2><p class="text-sm text-slate-500">স্টক আপডেট, Low Stock ও Out of Stock দেখুন।</p></div>
+        <div class="grid md:grid-cols-3 gap-4">
+          <div class="card p-5"><p class="text-sm text-slate-500">মোট স্টক ইউনিট</p><b id="inventoryTotal" class="text-3xl mt-2 block">0</b></div>
+          <div class="card p-5"><p class="text-sm text-slate-500">Low Stock</p><b id="inventoryLow" class="text-3xl mt-2 block text-amber-600">0</b></div>
+          <div class="card p-5"><p class="text-sm text-slate-500">Out of Stock</p><b id="inventoryOut" class="text-3xl mt-2 block text-rose-600">0</b></div>
+        </div>
+        <div class="card p-4"><div id="inventoryTable"></div></div>
+      </section>
+
+      <!-- CUSTOMERS -->
+      <section id="view-customers" class="view space-y-5">
+        <div><h2 class="text-2xl font-bold">কাস্টমার</h2><p class="text-sm text-slate-500">অর্ডার থেকে কাস্টমার তালিকা স্বয়ংক্রিয়ভাবে তৈরি হয়।</p></div>
+        <div class="card p-4"><div id="customersTable"></div></div>
+      </section>
+
+      <!-- GENERIC BANNERS -->
+      <section id="view-banners" class="view space-y-5">
+        <div class="flex items-center justify-between"><div><h2 class="text-2xl font-bold">ব্যানার / স্লাইডার</h2><p class="text-sm text-slate-500">Hero banner ও slider control.</p></div><button id="openBannerModal" class="btn btn-primary"><i data-lucide="plus" class="w-4 h-4"></i> ব্যানার যোগ</button></div>
+        <div id="bannersGrid" class="grid md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+      </section>
+
+      <!-- COUPONS -->
+      <section id="view-coupons" class="view space-y-5">
+        <div class="flex items-center justify-between"><div><h2 class="text-2xl font-bold">কুপন ও অফার</h2><p class="text-sm text-slate-500">Discount code, expiry ও usage limit.</p></div><button id="openCouponModal" class="btn btn-primary"><i data-lucide="plus" class="w-4 h-4"></i> কুপন তৈরি</button></div>
+        <div class="card p-4"><div id="couponsTable"></div></div>
+      </section>
+
+      <!-- REVIEWS -->
+      <section id="view-reviews" class="view space-y-5">
+        <div><h2 class="text-2xl font-bold">রিভিউ ম্যানেজমেন্ট</h2><p class="text-sm text-slate-500">Approve, reject অথবা delete করুন।</p></div>
+        <div class="card p-4"><div id="reviewsTable"></div></div>
+      </section>
+
+      <!-- HOMEPAGE -->
+      <section id="view-homepage" class="view space-y-5">
+        <div><h2 class="text-2xl font-bold">হোমপেজ ম্যানেজমেন্ট</h2><p class="text-sm text-slate-500">বর্তমান homepage content নিয়ন্ত্রণ করুন; নতুন section স্বয়ংক্রিয়ভাবে যোগ হবে না।</p></div>
+        <form data-settings="homepage" class="settings-form card p-5 grid md:grid-cols-2 gap-4">
+          <div><label class="text-xs font-bold">Hero Heading</label><input name="heroHeading" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Hero Subheading</label><input name="heroSubheading" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">CTA Text</label><input name="ctaText" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">CTA Link</label><input name="ctaLink" class="field mt-1"></div>
+          <div class="md:col-span-2 flex gap-4 flex-wrap">
+            <label class="flex items-center gap-2 text-sm"><input name="showCategories" type="checkbox"> Categories section চালু</label>
+            <label class="flex items-center gap-2 text-sm"><input name="showOffers" type="checkbox"> Offer section চালু</label>
+          </div>
+          <div class="md:col-span-2"><button class="btn btn-primary">সেভ করুন</button></div>
+        </form>
+      </section>
+
+      <!-- DELIVERY -->
+      <section id="view-delivery" class="view space-y-5">
+        <div><h2 class="text-2xl font-bold">ডেলিভারি ও Shipping Zone</h2><p class="text-sm text-slate-500">Delivery charge এবং custom zone পরিচালনা করুন।</p></div>
+        <form data-settings="delivery" class="settings-form card p-5 grid md:grid-cols-3 gap-4">
+          <div><label class="text-xs font-bold">ঢাকার ভিতরে (৳)</label><input name="insideCharge" type="number" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">ঢাকার বাইরে (৳)</label><input name="outsideCharge" type="number" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Free delivery minimum (৳)</label><input name="freeMinimum" type="number" class="field mt-1"></div>
+          <div class="md:col-span-3"><button class="btn btn-primary">চার্জ সেভ করুন</button></div>
+        </form>
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-4"><h3 class="font-bold">Custom Shipping Zones</h3><button id="openZoneModal" class="btn btn-soft"><i data-lucide="plus" class="w-4 h-4"></i> Zone যোগ</button></div>
+          <div id="zonesTable"></div>
+        </div>
+      </section>
+
+      <!-- PAYMENT -->
+      <section id="view-payment" class="view space-y-5">
+        <div><h2 class="text-2xl font-bold">Payment / Cash On Delivery</h2></div>
+        <form data-settings="payment" class="settings-form card p-5 grid md:grid-cols-2 gap-4">
+          <label class="flex items-center gap-2"><input name="codEnabled" type="checkbox"> Cash On Delivery চালু</label>
+          <label class="flex items-center gap-2"><input name="bkashEnabled" type="checkbox"> bKash চালু</label>
+          <div><label class="text-xs font-bold">bKash Number</label><input name="bkashNumber" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Payment Instruction</label><input name="instruction" class="field mt-1"></div>
+          <div class="md:col-span-2"><button class="btn btn-primary">সেভ করুন</button></div>
+        </form>
+      </section>
+
+      <!-- NOTICE -->
+      <section id="view-notice" class="view space-y-5">
+        <div><h2 class="text-2xl font-bold">Notice Bar / Popup</h2></div>
+        <form data-settings="notice" class="settings-form card p-5 grid md:grid-cols-2 gap-4">
+          <div class="md:col-span-2"><label class="text-xs font-bold">Notice Text</label><input name="noticeText" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Notice Link</label><input name="noticeLink" class="field mt-1"></div>
+          <label class="flex items-center gap-2"><input name="noticeEnabled" type="checkbox"> Notice Bar চালু</label>
+          <div><label class="text-xs font-bold">Popup Heading</label><input name="popupHeading" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Popup Image URL</label><input name="popupImage" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Popup Button</label><input name="popupButton" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Popup Link</label><input name="popupLink" class="field mt-1"></div>
+          <label class="flex items-center gap-2"><input name="popupEnabled" type="checkbox"> Popup চালু</label>
+          <div class="md:col-span-2"><button class="btn btn-primary">সেভ করুন</button></div>
+        </form>
+      </section>
+
+      <!-- CONTACT -->
+      <section id="view-contact" class="view space-y-5">
+        <div><h2 class="text-2xl font-bold">যোগাযোগ ও সোশ্যাল</h2></div>
+        <form data-settings="contact" class="settings-form card p-5 grid md:grid-cols-2 gap-4">
+          <div><label class="text-xs font-bold">Hotline</label><input name="hotline" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Phone</label><input name="phone" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">WhatsApp</label><input name="whatsapp" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Email</label><input name="email" class="field mt-1"></div>
+          <div class="md:col-span-2"><label class="text-xs font-bold">Address</label><input name="address" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Facebook</label><input name="facebook" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Instagram</label><input name="instagram" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">YouTube</label><input name="youtube" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">TikTok</label><input name="tiktok" class="field mt-1"></div>
+          <div class="md:col-span-2"><button class="btn btn-primary">সেভ করুন</button></div>
+        </form>
+      </section>
+
+      <!-- POLICIES -->
+      <section id="view-policies" class="view space-y-5">
+        <div><h2 class="text-2xl font-bold">Policy Pages</h2></div>
+        <form data-settings="policies" class="settings-form card p-5 grid md:grid-cols-2 gap-4">
+          <div><label class="text-xs font-bold">Privacy Policy</label><textarea name="privacy" rows="8" class="field mt-1"></textarea></div>
+          <div><label class="text-xs font-bold">Terms & Conditions</label><textarea name="terms" rows="8" class="field mt-1"></textarea></div>
+          <div><label class="text-xs font-bold">Return & Refund</label><textarea name="refund" rows="8" class="field mt-1"></textarea></div>
+          <div><label class="text-xs font-bold">Shipping Policy</label><textarea name="shipping" rows="8" class="field mt-1"></textarea></div>
+          <div class="md:col-span-2"><button class="btn btn-primary">সেভ করুন</button></div>
+        </form>
+      </section>
+
+      <!-- SEO -->
+      <section id="view-seo" class="view space-y-5">
+        <div><h2 class="text-2xl font-bold">SEO Settings</h2></div>
+        <form data-settings="seo" class="settings-form card p-5 grid md:grid-cols-2 gap-4">
+          <div><label class="text-xs font-bold">Site Title</label><input name="siteTitle" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Meta Keywords</label><input name="keywords" class="field mt-1"></div>
+          <div class="md:col-span-2"><label class="text-xs font-bold">Meta Description</label><textarea name="description" rows="4" class="field mt-1"></textarea></div>
+          <div><label class="text-xs font-bold">Google Verification</label><input name="googleVerification" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Facebook Pixel ID</label><input name="facebookPixel" class="field mt-1"></div>
+          <div class="md:col-span-2"><button class="btn btn-primary">সেভ করুন</button></div>
+        </form>
+      </section>
+
+      <!-- STORE -->
+      <section id="view-store" class="view space-y-5">
+        <div><h2 class="text-2xl font-bold">Store Settings</h2></div>
+        <form data-settings="store" class="settings-form card p-5 grid md:grid-cols-2 gap-4">
+          <div><label class="text-xs font-bold">Store Name</label><input name="name" class="field mt-1" value="Seed Haven BD"></div>
+          <div><label class="text-xs font-bold">Logo URL</label><input name="logo" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Favicon URL</label><input name="favicon" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Store Hours</label><input name="hours" class="field mt-1"></div>
+          <div><label class="text-xs font-bold">Currency</label><select name="currency" class="field mt-1"><option value="BDT">BDT (৳)</option><option value="USD">USD ($)</option></select></div>
+          <div><label class="text-xs font-bold">Default Language</label><select name="language" class="field mt-1"><option value="bn">বাংলা</option><option value="en">English</option></select></div>
+          <div class="md:col-span-2"><button class="btn btn-primary">সেভ করুন</button></div>
+        </form>
+      </section>
+
+      <!-- REPORTS -->
+      <section id="view-reports" class="view space-y-5">
+        <div><h2 class="text-2xl font-bold">রিপোর্ট</h2><p class="text-sm text-slate-500">Sales, order ও inventory summary.</p></div>
+        <div class="grid md:grid-cols-4 gap-4">
+          <div class="card p-5"><p class="text-xs text-slate-500">মোট Revenue</p><b id="reportRevenue" class="text-2xl block mt-2">৳0</b></div>
+          <div class="card p-5"><p class="text-xs text-slate-500">Delivered Orders</p><b id="reportDelivered" class="text-2xl block mt-2">0</b></div>
+          <div class="card p-5"><p class="text-xs text-slate-500">Average Order</p><b id="reportAvg" class="text-2xl block mt-2">৳0</b></div>
+          <div class="card p-5"><p class="text-xs text-slate-500">Stock Units</p><b id="reportStock" class="text-2xl block mt-2">0</b></div>
+        </div>
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-4"><h3 class="font-bold">Best Selling / Most Ordered Products</h3><button id="exportCsv" class="btn btn-soft"><i data-lucide="download" class="w-4 h-4"></i> CSV Export</button></div>
+          <div id="bestSelling"></div>
+        </div>
+      </section>
+
+      <!-- ADMINS -->
+      <section id="view-admins" class="view space-y-5">
+        <div class="flex items-center justify-between"><div><h2 class="text-2xl font-bold">Admin Users / Security</h2><p class="text-sm text-slate-500">Super Admin, Admin ও Manager role record পরিচালনা করুন।</p></div><button id="openAdminModal" class="btn btn-primary"><i data-lucide="user-plus" class="w-4 h-4"></i> Admin যোগ</button></div>
+        <div class="card p-4"><div id="adminsTable"></div></div>
+        <div class="card p-5 border-amber-200 bg-amber-50">
+          <div class="flex gap-3"><i data-lucide="shield-alert" class="w-5 h-5 text-amber-700 shrink-0 mt-0.5"></i><div><h3 class="font-bold text-amber-900">Security Note</h3><p class="text-sm text-amber-800 mt-1">এই single-file panel Firestore access ব্যবহার করে। Production-এ Firebase Authentication ও Firestore Security Rules দিয়ে admin access সীমাবদ্ধ করা আবশ্যক। এই প্যানেল existing Firebase config পরিবর্তন করে না।</p></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- PRODUCT MODAL -->
+  <div id="productModal" class="modal fixed inset-0 z-[70] bg-slate-950/50 backdrop-blur-sm items-center justify-center p-4 overflow-y-auto">
+    <div class="card w-full max-w-3xl p-5 my-6">
+      <div class="flex items-center justify-between mb-4"><h3 id="productModalTitle" class="text-xl font-bold">নতুন প্রোডাক্ট</h3><button data-close="productModal" class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button></div>
+      <form id="productForm" class="grid md:grid-cols-2 gap-4">
+        <input type="hidden" id="productId">
+        <div><label class="text-xs font-bold">Product Name *</label><input id="pName" required class="field mt-1"></div>
+        <div><label class="text-xs font-bold">Category</label><select id="pCategory" class="field mt-1"></select></div>
+        <div><label class="text-xs font-bold">Regular Price *</label><input id="pRegularPrice" type="number" required class="field mt-1"></div>
+        <div><label class="text-xs font-bold">Sale Price</label><input id="pSalePrice" type="number" class="field mt-1"></div>
+        <div><label class="text-xs font-bold">Stock</label><input id="pStock" type="number" class="field mt-1" value="50"></div>
+        <div><label class="text-xs font-bold">SKU</label><input id="pSku" class="field mt-1"></div>
+        <div><label class="text-xs font-bold">Unit / Pack Size</label><input id="pUnit" class="field mt-1" value="১ প্যাকেট"></div>
+        <div><label class="text-xs font-bold">Discount %</label><input id="pDiscount" type="number" class="field mt-1"></div>
+        <div class="md:col-span-2"><label class="text-xs font-bold">Main Image URL</label><input id="pImage" type="url" class="field mt-1"></div>
+        <div class="md:col-span-2"><label class="text-xs font-bold">Multiple Image URLs (প্রতি লাইনে একটি)</label><textarea id="pImages" rows="3" class="field mt-1"></textarea></div>
+        <div class="md:col-span-2"><label class="text-xs font-bold">Description</label><textarea id="pDescription" rows="4" class="field mt-1"></textarea></div>
+        <div><label class="text-xs font-bold">SEO Title</label><input id="pSeoTitle" class="field mt-1"></div>
+        <div><label class="text-xs font-bold">SEO Description</label><input id="pSeoDescription" class="field mt-1"></div>
+        <label class="flex items-center gap-2"><input id="pActive" type="checkbox" checked> Active</label>
+        <label class="flex items-center gap-2"><input id="pFeatured" type="checkbox"> Featured</label>
+        <div class="md:col-span-2 flex justify-end gap-2 pt-2"><button type="button" data-close="productModal" class="btn btn-soft">বাতিল</button><button class="btn btn-primary">সেভ করুন</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CATEGORY MODAL -->
+  <div id="categoryModal" class="modal fixed inset-0 z-[70] bg-slate-950/50 backdrop-blur-sm items-center justify-center p-4">
+    <div class="card w-full max-w-lg p-5">
+      <div class="flex items-center justify-between mb-4"><h3 class="text-xl font-bold">ক্যাটাগরি</h3><button data-close="categoryModal" class="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center">✕</button></div>
+      <form id="categoryForm" class="space-y-4">
+        <input type="hidden" id="categoryId">
+        <div><label class="text-xs font-bold">নাম *</label><input id="cName" required class="field mt-1"></div>
+        <div><label class="text-xs font-bold">Slug *</label><input id="cSlug" required class="field mt-1" placeholder="flower"></div>
+        <div><label class="text-xs font-bold">Image/Icon URL</label><input id="cImage" class="field mt-1"></div>
+        <label class="flex items-center gap-2"><input id="cActive" type="checkbox" checked> Active</label>
+        <button class="btn btn-primary w-full">সেভ করুন</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SIMPLE MODALS -->
+  <div id="bannerModal" class="modal fixed inset-0 z-[70] bg-slate-950/50 backdrop-blur-sm items-center justify-center p-4">
+    <div class="card w-full max-w-lg p-5">
+      <div class="flex justify-between mb-4"><h3 class="text-xl font-bold">ব্যানার</h3><button data-close="bannerModal">✕</button></div>
+      <form id="bannerForm" class="space-y-3">
+        <input type="hidden" id="bannerId"><input id="bTitle" class="field" placeholder="Title"><input id="bSubtitle" class="field" placeholder="Subtitle"><input id="bImage" class="field" placeholder="Image URL"><input id="bButtonText" class="field" placeholder="Button text"><input id="bButtonLink" class="field" placeholder="Button link"><input id="bPosition" type="number" class="field" placeholder="Position" value="1"><label class="flex gap-2"><input id="bActive" type="checkbox" checked> Active</label><button class="btn btn-primary w-full">সেভ করুন</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="couponModal" class="modal fixed inset-0 z-[70] bg-slate-950/50 backdrop-blur-sm items-center justify-center p-4">
+    <div class="card w-full max-w-lg p-5">
+      <div class="flex justify-between mb-4"><h3 class="text-xl font-bold">কুপন</h3><button data-close="couponModal">✕</button></div>
+      <form id="couponForm" class="grid grid-cols-2 gap-3">
+        <input type="hidden" id="couponId"><input id="coCode" required class="field col-span-2" placeholder="Coupon Code"><select id="coType" class="field"><option value="percent">Percentage</option><option value="fixed">Fixed</option></select><input id="coValue" type="number" class="field" placeholder="Discount value"><input id="coMinimum" type="number" class="field" placeholder="Minimum order"><input id="coMax" type="number" class="field" placeholder="Max discount"><input id="coExpiry" type="date" class="field"><input id="coLimit" type="number" class="field" placeholder="Usage limit"><label class="flex gap-2 col-span-2"><input id="coActive" type="checkbox" checked> Active</label><button class="btn btn-primary col-span-2">সেভ করুন</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="zoneModal" class="modal fixed inset-0 z-[70] bg-slate-950/50 backdrop-blur-sm items-center justify-center p-4">
+    <div class="card w-full max-w-md p-5">
+      <div class="flex justify-between mb-4"><h3 class="text-xl font-bold">Shipping Zone</h3><button data-close="zoneModal">✕</button></div>
+      <form id="zoneForm" class="space-y-3"><input id="zName" required class="field" placeholder="Zone name"><input id="zCharge" required type="number" class="field" placeholder="Charge"><button class="btn btn-primary w-full">সেভ করুন</button></form>
+    </div>
+  </div>
+
+  <div id="adminModal" class="modal fixed inset-0 z-[70] bg-slate-950/50 backdrop-blur-sm items-center justify-center p-4">
+    <div class="card w-full max-w-md p-5">
+      <div class="flex justify-between mb-4"><h3 class="text-xl font-bold">Admin User Record</h3><button data-close="adminModal">✕</button></div>
+      <form id="adminForm" class="space-y-3"><input id="aName" required class="field" placeholder="Name"><input id="aEmail" required type="email" class="field" placeholder="Email"><select id="aRole" class="field"><option>Super Admin</option><option>Admin</option><option>Manager</option></select><button class="btn btn-primary w-full">সেভ করুন</button></form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import {
+      getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot,
+      getDocs, serverTimestamp, setDoc, getDoc
+    } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      projectId: "splendid-temple-qcf5x",
+      appId: "1:684750266151:web:708d3efc9c00a17e3a5302",
+      apiKey: "AIzaSyCIh_0ReFnFG-SHnNh4wrrB9jcu8HFb3Ew",
+      authDomain: "splendid-temple-qcf5x.firebaseapp.com",
+      storageBucket: "splendid-temple-qcf5x.firebasestorage.app",
+      messagingSenderId: "684750266151",
+      firestoreDatabaseId: "ai-studio-seedhavenbd-12bcae4a-79cd-436a-9d25-07231f0ffec6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+
+    let products = [], orders = [], categories = [], banners = [], coupons = [], reviews = [], zones = [], admins = [];
+    let salesChart, orderChart;
+    const fallbackCategories = [
+      {id:'fruit',name:'ফল গাছের বীজ',slug:'fruit',active:true,image:'https://i.ibb.co.com/xq8YYKm9/Chat-GPT-Image-Aug-8-2026-07-54-27-AM.png'},
+      {id:'veg',name:'সবজি বীজ',slug:'veg',active:true,image:'https://i.ibb.co.com/qYMkjyX8/Chat-GPT-Image-Aug-8-2026-07-59-21-AM.png'},
+      {id:'ful',name:'ফুলের বীজ',slug:'ful',active:true,image:'https://i.ibb.co.com/0Rg347Bm/Chat-GPT-Image-Aug-8-2026-08-06-20-AM.png'},
+      {id:'herbs',name:'হারবস বীজ',slug:'herbs',active:true,image:'https://i.ibb.co.com/j9kMQjfN/Chat-GPT-Image-Aug-8-2026-08-16-57-AM.png'},
+      {id:'offers',name:'অফার সমূহ',slug:'offers',active:true,image:'https://i.ibb.co.com/q3Xq3Nrh/Chat-GPT-Image-Aug-8-2026-08-19-58-AM.png'}
+    ];
+    const fallbackProducts = [
+      {id:'2',name:'হাইব্রিড টমেটো বীজ (বিউটিফুল)',category:'veg',price:180,originalPrice:220,regularPrice:220,salePrice:180,stock:100,sku:'TOM-02',unit:'১ প্যাকেট',packSize:'১ প্যাকেট',discount:18,image:'https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&q=80&w=600',active:true,featured:true},
+      {id:'3',name:'দেশি তরমুজ বীজ',category:'fruit',price:250,originalPrice:300,regularPrice:300,salePrice:250,stock:40,sku:'WTM-03',unit:'১ প্যাকেট',packSize:'১ প্যাকেট',discount:16,image:'https://images.unsplash.com/photo-1589984662646-e7b2e4962f18?auto=format&fit=crop&q=80&w=600',active:true,featured:true}
+    ];
+
+    const $ = s => document.querySelector(s);
+    const $$ = s => [...document.querySelectorAll(s)];
+    const money = n => '৳' + Number(n || 0).toLocaleString('en-US');
+    const esc = (v='') => String(v).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    const tsDate = v => {
+      try { if(!v) return ''; const d = v.toDate ? v.toDate() : new Date(v); return d.toLocaleString('bn-BD'); } catch { return ''; }
+    };
+    function toast(msg){
+      $('#toastText').textContent = msg;
+      $('#toast').classList.add('show');
+      setTimeout(()=>$('#toast').classList.remove('show'),3000);
+    }
+    function openModal(id){ $('#'+id).classList.add('open'); }
+    function closeModal(id){ $('#'+id).classList.remove('open'); }
+    function statusPill(status='pending'){
+      const map={pending:'bg-amber-100 text-amber-700',confirmed:'bg-indigo-100 text-indigo-700',processing:'bg-blue-100 text-blue-700',shipped:'bg-cyan-100 text-cyan-700',delivered:'bg-emerald-100 text-emerald-700',cancelled:'bg-rose-100 text-rose-700'};
+      return `<span class="pill ${map[status]||map.pending}">${esc(status)}</span>`;
+    }
+
+    // Navigation
+    function showView(name){
+      $$('.view').forEach(v=>v.classList.remove('active'));
+      $('#view-'+name)?.classList.add('active');
+      $$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===name));
+      $('#sidebar').classList.remove('open');
+      if(name==='reports') renderReports();
+      if(name==='customers') renderCustomers();
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    $$('.nav-item').forEach(btn=>btn.addEventListener('click',()=>showView(btn.dataset.view)));
+    $$('[data-view-jump]').forEach(btn=>btn.addEventListener('click',()=>showView(btn.dataset.viewJump)));
+    $('#menuBtn').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));
+    $$('[data-close]').forEach(btn=>btn.addEventListener('click',()=>closeModal(btn.dataset.close)));
+
+    // Firestore realtime
+    let productsSeeded = false;
+    onSnapshot(collection(db,'products'), snap=>{
+      if(snap.empty) {
+        if(!productsSeeded) {
+          productsSeeded = true;
+          fallbackProducts.forEach(p => setDoc(doc(db, 'products', p.id), p));
+        }
+        products = fallbackProducts;
+      } else {
+        products = snap.docs.map(d=>({id:d.id,...d.data()}));
+      }
+      renderProducts(); renderInventory(); refreshDashboard(); populateCategoryOptions(); renderReports();
+    }, e=>console.error(e));
+
+    onSnapshot(collection(db,'orders'), snap=>{
+      orders=snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderOrders(); refreshDashboard(); renderCustomers(); renderReports();
+    }, e=>console.error(e));
+
+    let categoriesSeeded = false;
+    onSnapshot(collection(db,'categories'), snap=>{
+      if(snap.empty) {
+        if(!categoriesSeeded) {
+          categoriesSeeded = true;
+          fallbackCategories.forEach(c => setDoc(doc(db, 'categories', c.id), c));
+        }
+        categories = fallbackCategories;
+      } else {
+        categories = snap.docs.map(d=>({id:d.id,...d.data()}));
+      }
+      renderCategories(); populateCategoryOptions();
+    }, e=>console.error(e));
+
+    onSnapshot(collection(db,'banners'), snap=>{banners=snap.docs.map(d=>({id:d.id,...d.data()}));renderBanners();});
+    onSnapshot(collection(db,'coupons'), snap=>{coupons=snap.docs.map(d=>({id:d.id,...d.data()}));renderCoupons();});
+    onSnapshot(collection(db,'reviews'), snap=>{reviews=snap.docs.map(d=>({id:d.id,...d.data()}));renderReviews();});
+    onSnapshot(collection(db,'shippingZones'), snap=>{zones=snap.docs.map(d=>({id:d.id,...d.data()}));renderZones();});
+    onSnapshot(collection(db,'adminUsers'), snap=>{admins=snap.docs.map(d=>({id:d.id,...d.data()}));renderAdmins();});
+
+    function effectiveCategories(){ return categories.length ? categories : fallbackCategories; }
+    function categoryName(slug){ return effectiveCategories().find(c=>c.slug===slug||c.id===slug)?.name || slug || 'অন্যান্য'; }
+
+    function populateCategoryOptions(){
+      const cats=effectiveCategories().filter(c=>c.active!==false);
+      const html=cats.map(c=>`<option value="${esc(c.slug||c.id)}">${esc(c.name)}</option>`).join('');
+      if($('#pCategory')) $('#pCategory').innerHTML=html;
+      if($('#productCategoryFilter')) $('#productCategoryFilter').innerHTML='<option value="">সব ক্যাটাগরি</option>'+html;
+    }
+
+    // PRODUCTS
+    function productPrice(p){ return Number(p.salePrice ?? p.price ?? 0); }
+    function regularPrice(p){ return Number(p.regularPrice ?? p.originalPrice ?? p.price ?? 0); }
+    function renderProducts(){
+      let list=products.length?products:fallbackProducts;
+      let q=$('#productSearch')?.value?.trim().toLowerCase()||'';
+      let cat=$('#productCategoryFilter')?.value||'';
+      let filtered=list.filter(p=>(!q || `${p.name||''} ${p.sku||''}`.toLowerCase().includes(q)) && (!cat || p.category===cat));
+      $('#productsTable').innerHTML=filtered.length?`<div class="table-wrap"><table><thead><tr><th>প্রোডাক্ট</th><th>ক্যাটাগরি</th><th>দাম</th><th>স্টক</th><th>অবস্থা</th><th>অ্যাকশন</th></tr></thead><tbody>${filtered.map(p=>`
+        <tr>
+          <td><div class="flex items-center gap-3"><img src="${esc(p.image||'https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&q=80&w=300')}" class="w-11 h-11 rounded-xl object-cover"><div><b>${esc(p.name||'Unnamed')}</b><p class="text-[11px] text-slate-400">${esc(p.sku||'')}</p></div></div></td>
+          <td>${esc(categoryName(p.category))}</td>
+          <td><b class="text-emerald-700">${money(productPrice(p))}</b>${regularPrice(p)>productPrice(p)?`<div class="text-[11px] text-slate-400 line-through">${money(regularPrice(p))}</div>`:''}</td>
+          <td>${Number(p.stock||0)}</td>
+          <td>${p.active===false?'<span class="pill bg-slate-100 text-slate-600">Inactive</span>':'<span class="pill bg-emerald-100 text-emerald-700">Active</span>'}</td>
+          <td><div class="flex gap-1"><button class="btn btn-soft py-2 px-2.5 edit-product" data-id="${p.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button class="btn btn-danger py-2 px-2.5 delete-product" data-id="${p.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div></td>
+        </tr>`).join('')}</tbody></table></div>`:`<div class="py-12 text-center text-slate-400">কোনো প্রোডাক্ট পাওয়া যায়নি।</div>`;
+      lucide.createIcons();
+      $$('.edit-product').forEach(b=>b.onclick=()=>editProduct(b.dataset.id));
+      $$('.delete-product').forEach(b=>b.onclick=()=>deleteProduct(b.dataset.id));
+    }
+    $('#productSearch').addEventListener('input',renderProducts);
+    $('#productCategoryFilter').addEventListener('change',renderProducts);
+    $('#openProductModal').onclick=()=>{ $('#productForm').reset(); $('#productId').value=''; $('#pStock').value=50; $('#pUnit').value='১ প্যাকেট'; $('#pActive').checked=true; $('#productModalTitle').textContent='নতুন প্রোডাক্ট যোগ'; populateCategoryOptions(); openModal('productModal'); };
+    function editProduct(id){
+      const list=products.length?products:fallbackProducts;
+      const p=list.find(x=>x.id===id); if(!p)return;
+      $('#productId').value=p.id; $('#pName').value=p.name||''; $('#pCategory').value=p.category||'veg';
+      $('#pRegularPrice').value=regularPrice(p)||''; $('#pSalePrice').value=productPrice(p)||'';
+      $('#pStock').value=p.stock??0; $('#pSku').value=p.sku||''; $('#pUnit').value=p.unit||p.packSize||'১ প্যাকেট';
+      $('#pDiscount').value=p.discount||''; $('#pImage').value=p.image||'';
+      $('#pImages').value=(p.images||[]).join('\n'); $('#pDescription').value=p.description||'';
+      $('#pSeoTitle').value=p.seoTitle||''; $('#pSeoDescription').value=p.seoDescription||'';
+      $('#pActive').checked=p.active!==false; $('#pFeatured').checked=!!p.featured;
+      $('#productModalTitle').textContent='প্রোডাক্ট এডিট'; openModal('productModal');
+    }
+    async function deleteProduct(id){
+      if(confirm('এই প্রোডাক্টটি মুছে ফেলবেন?')){
+        try {
+          await deleteDoc(doc(db,'products',id));
+          toast('প্রোডাক্ট মুছে ফেলা হয়েছে');
+        } catch(e){
+          console.error(e);
+          toast('ত্রুটি: ' + e.message);
+        }
+      }
+    }
+    $('#productForm').addEventListener('submit',async e=>{
+      e.preventDefault();
+      try {
+        const regular=Number($('#pRegularPrice').value||0), sale=Number($('#pSalePrice').value||regular), image=$('#pImage').value.trim();
+        const data={
+          name:$('#pName').value.trim(), category:$('#pCategory').value, regularPrice:regular, salePrice:sale,
+          price:sale, originalPrice:regular, stock:Number($('#pStock').value||0), sku:$('#pSku').value.trim(),
+          unit:$('#pUnit').value.trim(), packSize:$('#pUnit').value.trim(), discount:Number($('#pDiscount').value||0),
+          image, images:$('#pImages').value.split('\n').map(x=>x.trim()).filter(Boolean).length?$('#pImages').value.split('\n').map(x=>x.trim()).filter(Boolean):(image?[image]:[]),
+          description:$('#pDescription').value.trim(), seoTitle:$('#pSeoTitle').value.trim(), seoDescription:$('#pSeoDescription').value.trim(),
+          active:$('#pActive').checked, featured:$('#pFeatured').checked, updatedAt:serverTimestamp()
+        };
+        const id=$('#productId').value;
+        if(id) await setDoc(doc(db,'products',id),data,{merge:true}); else await addDoc(collection(db,'products'),{...data,createdAt:serverTimestamp()});
+        closeModal('productModal'); toast(id?'প্রোডাক্ট আপডেট হয়েছে':'প্রোডাক্ট যোগ হয়েছে');
+      } catch(err) {
+        console.error(err);
+        toast('ত্রুটি: ' + err.message);
+      }
+    });
+
+    // CATEGORIES
+    function renderCategories(){
+      const list=categories.length?categories:fallbackCategories;
+      $('#categoriesGrid').innerHTML=list.map(c=>`<div class="card p-4"><div class="flex items-center gap-3">${c.image?`<img src="${esc(c.image)}" class="w-14 h-14 rounded-2xl object-cover">`:`<div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center"><i data-lucide="sprout" class="w-6 h-6"></i></div>`}<div class="flex-1"><b>${esc(c.name)}</b><p class="text-xs text-slate-400">${esc(c.slug||c.id)}</p></div></div><div class="flex gap-2 mt-4"><button class="btn btn-soft flex-1 edit-category" data-id="${c.id}">Edit</button><button class="btn btn-danger delete-category" data-id="${c.id}">Delete</button></div></div>`).join('');
+      lucide.createIcons();
+      $$('.edit-category').forEach(b=>b.onclick=()=>{
+        const list=categories.length?categories:fallbackCategories;
+        let c=list.find(x=>x.id===b.dataset.id);
+        if(!c)return;
+        $('#categoryId').value=c.id;$('#cName').value=c.name||'';$('#cSlug').value=c.slug||'';$('#cImage').value=c.image||'';$('#cActive').checked=c.active!==false;openModal('categoryModal');
+      });
+      $$('.delete-category').forEach(b=>b.onclick=async()=>{
+        if(confirm('ক্যাটাগরি মুছবেন?')){
+          try {
+            await deleteDoc(doc(db,'categories',b.dataset.id));
+            toast('ক্যাটাগরি মুছে ফেলা হয়েছে');
+          } catch(e) { console.error(e); toast('ত্রুটি: '+e.message); }
+        }
+      });
+    }
+    $('#openCategoryModal').onclick=()=>{$('#categoryForm').reset();$('#categoryId').value='';$('#cActive').checked=true;openModal('categoryModal')};
+    $('#categoryForm').addEventListener('submit',async e=>{
+      e.preventDefault();
+      try {
+        let id=$('#categoryId').value;
+        let data={name:$('#cName').value.trim(),slug:$('#cSlug').value.trim()||id,image:$('#cImage').value.trim(),active:$('#cActive').checked,updatedAt:serverTimestamp()};
+        if(id) await setDoc(doc(db,'categories',id),data,{merge:true}); else await addDoc(collection(db,'categories'),{...data,createdAt:serverTimestamp()});
+        closeModal('categoryModal');toast('ক্যাটাগরি সেভ হয়েছে');
+      } catch(e) { console.error(e); toast('ত্রুটি: '+e.message); }
+    });
+
+    // ORDERS
+    function renderOrders(){
+      let q=$('#orderSearch')?.value?.trim().toLowerCase()||'', st=$('#orderStatusFilter')?.value||'';
+      let list=orders.filter(o=>(!q||`${o.id} ${o.customerName||''} ${o.phone||''}`.toLowerCase().includes(q))&&(!st||(o.status||'pending')===st));
+      $('#ordersTable').innerHTML=list.length?`<div class="table-wrap"><table><thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Payment</th><th>Status</th><th>Action</th></tr></thead><tbody>${list.map(o=>`<tr><td><b>#${esc(o.id.slice(0,8))}</b><p class="text-[11px] text-slate-400">${tsDate(o.createdAt)}</p></td><td><b>${esc(o.customerName||'গ্রাহক')}</b><p class="text-[11px] text-slate-400">${esc(o.phone||'')}</p><p class="text-[11px] text-slate-400">${esc(o.address||'')}</p></td><td><b>${money(o.total||o.totalAmount)}</b></td><td>${esc(o.paymentMethod||'COD')}</td><td><select class="field py-2 order-status" data-id="${o.id}"><option value="pending" ${(o.status||'pending')==='pending'?'selected':''}>Pending</option><option value="confirmed" ${o.status==='confirmed'?'selected':''}>Confirmed</option><option value="processing" ${o.status==='processing'?'selected':''}>Processing</option><option value="shipped" ${o.status==='shipped'?'selected':''}>Shipped</option><option value="delivered" ${o.status==='delivered'?'selected':''}>Delivered</option><option value="cancelled" ${o.status==='cancelled'?'selected':''}>Cancelled</option></select></td><td><button class="btn btn-danger py-2 px-2.5 delete-order" data-id="${o.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td></tr>`).join('')}</tbody></table></div>`:'<div class="py-12 text-center text-slate-400">কোনো অর্ডার পাওয়া যায়নি।</div>';
+      lucide.createIcons();
+      $$('.order-status').forEach(s=>s.onchange=async()=>{
+        try {
+          await updateDoc(doc(db,'orders',s.dataset.id),{status:s.value,updatedAt:serverTimestamp()});
+          toast('অর্ডার স্ট্যাটাস আপডেট হয়েছে');
+        } catch(e) { console.error(e); toast('ত্রুটি: '+e.message); }
+      });
+      $$('.delete-order').forEach(b=>b.onclick=async()=>{
+        if(confirm('এই অর্ডারটি মুছবেন?')){
+          try {
+            await deleteDoc(doc(db,'orders',b.dataset.id));
+            toast('অর্ডার মুছে ফেলা হয়েছে');
+          } catch(e) { console.error(e); toast('ত্রুটি: '+e.message); }
+        }
+      });
+    }
+    $('#orderSearch').addEventListener('input',renderOrders); $('#orderStatusFilter').addEventListener('change',renderOrders);
+    $('#refreshOrders').onclick=()=>renderOrders();
+
+    // INVENTORY
+    function renderInventory(){
+      const total=products.reduce((s,p)=>s+Number(p.stock||0),0), low=products.filter(p=>Number(p.stock||0)>0&&Number(p.stock||0)<=10).length, out=products.filter(p=>Number(p.stock||0)<=0).length;
+      $('#inventoryTotal').textContent=total; $('#inventoryLow').textContent=low; $('#inventoryOut').textContent=out;
+      $('#inventoryTable').innerHTML=`<div class="table-wrap"><table><thead><tr><th>প্রোডাক্ট</th><th>SKU</th><th>স্টক</th><th>অবস্থা</th><th>Quick Update</th></tr></thead><tbody>${products.map(p=>`<tr><td>${esc(p.name||'')}</td><td>${esc(p.sku||'-')}</td><td>${Number(p.stock||0)}</td><td>${Number(p.stock||0)<=0?'<span class="pill bg-rose-100 text-rose-700">Out</span>':Number(p.stock||0)<=10?'<span class="pill bg-amber-100 text-amber-700">Low</span>':'<span class="pill bg-emerald-100 text-emerald-700">In Stock</span>'}</td><td><div class="flex gap-2"><input id="stock-${p.id}" type="number" class="field py-2 w-24" value="${Number(p.stock||0)}"><button class="btn btn-soft update-stock" data-id="${p.id}">Update</button></div></td></tr>`).join('')}</tbody></table></div>`;
+      $$('.update-stock').forEach(b=>b.onclick=async()=>{
+        try {
+          let v=Number($('#stock-'+b.dataset.id).value||0);
+          await updateDoc(doc(db,'products',b.dataset.id),{stock:v,stockUpdatedAt:serverTimestamp()});
+          toast('স্টক আপডেট হয়েছে');
+        } catch(e) { console.error(e); toast('ত্রুটি: '+e.message); }
+      });
+    }
+
+    // CUSTOMERS aggregated from orders
+    function renderCustomers(){
+      const map=new Map();
+      orders.forEach(o=>{const key=o.phone||o.customerName||o.id; if(!map.has(key))map.set(key,{name:o.customerName||'গ্রাহক',phone:o.phone||'',address:o.address||'',orders:0,spend:0,last:o.createdAt});let c=map.get(key);c.orders++;c.spend+=Number(o.total||o.totalAmount||0);c.last=o.createdAt||c.last;});
+      const list=[...map.values()];
+      $('#customersTable').innerHTML=list.length?`<div class="table-wrap"><table><thead><tr><th>Customer</th><th>Phone</th><th>Address</th><th>Total Orders</th><th>Total Spending</th><th>Last Order</th></tr></thead><tbody>${list.map(c=>`<tr><td><b>${esc(c.name)}</b></td><td>${esc(c.phone)}</td><td>${esc(c.address)}</td><td>${c.orders}</td><td>${money(c.spend)}</td><td>${tsDate(c.last)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="py-12 text-center text-slate-400">কাস্টমার ডাটা নেই।</div>';
+    }
+
+    // BANNERS
+    function renderBanners(){
+      $('#bannersGrid').innerHTML=banners.length?banners.map(b=>`<div class="card overflow-hidden">${b.image?`<img src="${esc(b.image)}" class="w-full h-36 object-cover">`:''}<div class="p-4"><div class="flex items-start justify-between"><div><b>${esc(b.title||'Banner')}</b><p class="text-xs text-slate-500">${esc(b.subtitle||'')}</p></div>${b.active===false?'<span class="pill bg-slate-100">Off</span>':'<span class="pill bg-emerald-100 text-emerald-700">Active</span>'}</div><div class="flex gap-2 mt-4"><button class="btn btn-soft flex-1 edit-banner" data-id="${b.id}">Edit</button><button class="btn btn-danger delete-banner" data-id="${b.id}">Delete</button></div></div></div>`).join(''):'<div class="card p-10 text-center text-slate-400 md:col-span-2 xl:col-span-3">কোনো ব্যানার নেই।</div>';
+      $$('.edit-banner').forEach(x=>x.onclick=()=>{let b=banners.find(i=>i.id===x.dataset.id);$('#bannerId').value=b.id;$('#bTitle').value=b.title||'';$('#bSubtitle').value=b.subtitle||'';$('#bImage').value=b.image||'';$('#bButtonText').value=b.buttonText||'';$('#bButtonLink').value=b.buttonLink||'';$('#bPosition').value=b.position||1;$('#bActive').checked=b.active!==false;openModal('bannerModal')});
+      $$('.delete-banner').forEach(x=>x.onclick=async()=>{
+        if(confirm('ব্যানার মুছবেন?')){
+          try { await deleteDoc(doc(db,'banners',x.dataset.id)); toast('ব্যানার মুছে ফেলা হয়েছে'); } catch(e) { console.error(e); toast('ত্রুটি: '+e.message); }
+        }
+      });
+    }
+    $('#openBannerModal').onclick=()=>{$('#bannerForm').reset();$('#bannerId').value='';$('#bActive').checked=true;openModal('bannerModal')};
+    $('#bannerForm').addEventListener('submit',async e=>{
+      e.preventDefault();
+      try {
+        let id=$('#bannerId').value,data={title:$('#bTitle').value.trim(),subtitle:$('#bSubtitle').value.trim(),image:$('#bImage').value.trim(),buttonText:$('#bButtonText').value.trim(),buttonLink:$('#bButtonLink').value.trim(),position:Number($('#bPosition').value||1),active:$('#bActive').checked,updatedAt:serverTimestamp()};
+        if(id)await updateDoc(doc(db,'banners',id),data);else await addDoc(collection(db,'banners'),{...data,createdAt:serverTimestamp()});
+        closeModal('bannerModal');toast('ব্যানার সেভ হয়েছে');
+      } catch(e) { console.error(e); toast('ত্রুটি: '+e.message); }
+    });
+
+    // COUPONS
+    function renderCoupons(){
+      $('#couponsTable').innerHTML=coupons.length?`<div class="table-wrap"><table><thead><tr><th>Code</th><th>Discount</th><th>Minimum</th><th>Expiry</th><th>Status</th><th>Action</th></tr></thead><tbody>${coupons.map(c=>`<tr><td><b>${esc(c.code||'')}</b></td><td>${c.type==='fixed'?money(c.value):`${Number(c.value||0)}%`}</td><td>${money(c.minimum)}</td><td>${esc(c.expiry||'-')}</td><td>${c.active===false?'<span class="pill bg-slate-100">Inactive</span>':'<span class="pill bg-emerald-100 text-emerald-700">Active</span>'}</td><td><div class="flex gap-2"><button class="btn btn-soft edit-coupon" data-id="${c.id}">Edit</button><button class="btn btn-danger delete-coupon" data-id="${c.id}">Delete</button></div></td></tr>`).join('')}</tbody></table></div>`:'<div class="py-12 text-center text-slate-400">কোনো কুপন নেই।</div>';
+      $$('.edit-coupon').forEach(x=>x.onclick=()=>{let c=coupons.find(i=>i.id===x.dataset.id);$('#couponId').value=c.id;$('#coCode').value=c.code||'';$('#coType').value=c.type||'percent';$('#coValue').value=c.value||0;$('#coMinimum').value=c.minimum||0;$('#coMax').value=c.maxDiscount||0;$('#coExpiry').value=c.expiry||'';$('#coLimit').value=c.usageLimit||0;$('#coActive').checked=c.active!==false;openModal('couponModal')});
+      $$('.delete-coupon').forEach(x=>x.onclick=async()=>{
+        if(confirm('কুপন মুছবেন?')){
+          try { await deleteDoc(doc(db,'coupons',x.dataset.id)); toast('কুপন মুছে ফেলা হয়েছে'); } catch(e) { console.error(e); toast('ত্রুটি: '+e.message); }
+        }
+      });
+    }
+    $('#openCouponModal').onclick=()=>{$('#couponForm').reset();$('#couponId').value='';$('#coActive').checked=true;openModal('couponModal')};
+    $('#couponForm').addEventListener('submit',async e=>{
+      e.preventDefault();
+      try {
+        let id=$('#couponId').value,data={code:$('#coCode').value.trim().toUpperCase(),type:$('#coType').value,value:Number($('#coValue').value||0),minimum:Number($('#coMinimum').value||0),maxDiscount:Number($('#coMax').value||0),expiry:$('#coExpiry').value,usageLimit:Number($('#coLimit').value||0),active:$('#coActive').checked,updatedAt:serverTimestamp()};
+        if(id)await updateDoc(doc(db,'coupons',id),data);else await addDoc(collection(db,'coupons'),{...data,createdAt:serverTimestamp()});
+        closeModal('couponModal');toast('কুপন সেভ হয়েছে');
+      } catch(e) { console.error(e); toast('ত্রুটি: '+e.message); }
+    });
+
+    // REVIEWS
+    function renderReviews(){
+      $('#reviewsTable').innerHTML=reviews.length?`<div class="table-wrap"><table><thead><tr><th>Customer</th><th>Product</th><th>Rating</th><th>Review</th><th>Status</th><th>Action</th></tr></thead><tbody>${reviews.map(r=>`<tr><td>${esc(r.customerName||'')}</td><td>${esc(r.productName||r.productId||'')}</td><td>⭐ ${Number(r.rating||0)}</td><td>${esc(r.comment||r.review||'')}</td><td>${statusPill(r.status||'pending')}</td><td><div class="flex gap-1"><button class="btn btn-soft review-approve" data-id="${r.id}">Approve</button><button class="btn btn-danger review-reject" data-id="${r.id}">Reject</button><button class="btn btn-danger review-delete" data-id="${r.id}">Delete</button></div></td></tr>`).join('')}</tbody></table></div>`:'<div class="py-12 text-center text-slate-400">কোনো রিভিউ নেই।</div>';
+      $$('.review-approve').forEach(b=>b.onclick=async()=>{ try { await updateDoc(doc(db,'reviews',b.dataset.id),{status:'approved'}); toast('রিভিউ Approved'); } catch(e){ console.error(e); toast('ত্রুটি: '+e.message); } });
+      $$('.review-reject').forEach(b=>b.onclick=async()=>{ try { await updateDoc(doc(db,'reviews',b.dataset.id),{status:'rejected'}); toast('রিভিউ Rejected'); } catch(e){ console.error(e); toast('ত্রুটি: '+e.message); } });
+      $$('.review-delete').forEach(b=>b.onclick=async()=>{ if(confirm('রিভিউ মুছবেন?')){ try { await deleteDoc(doc(db,'reviews',b.dataset.id)); toast('রিভিউ মুছে ফেলা হয়েছে'); } catch(e){ console.error(e); toast('ত্রুটি: '+e.message); } } });
+    }
+
+    // ZONES
+    function renderZones(){
+      $('#zonesTable').innerHTML=zones.length?`<div class="table-wrap"><table><thead><tr><th>Zone</th><th>Charge</th><th>Action</th></tr></thead><tbody>${zones.map(z=>`<tr><td>${esc(z.name)}</td><td>${money(z.charge)}</td><td><button class="btn btn-danger delete-zone" data-id="${z.id}">Delete</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="py-8 text-center text-slate-400">Custom zone নেই।</div>';
+      $$('.delete-zone').forEach(b=>b.onclick=async()=>{ if(confirm('Zone মুছবেন?')){ try { await deleteDoc(doc(db,'shippingZones',b.dataset.id)); toast('Zone মুছে ফেলা হয়েছে'); } catch(e){ console.error(e); toast('ত্রুটি: '+e.message); } } });
+    }
+    $('#openZoneModal').onclick=()=>{$('#zoneForm').reset();openModal('zoneModal')};
+    $('#zoneForm').addEventListener('submit',async e=>{
+      e.preventDefault();
+      try {
+        await addDoc(collection(db,'shippingZones'),{name:$('#zName').value.trim(),charge:Number($('#zCharge').value||0),createdAt:serverTimestamp()});
+        closeModal('zoneModal');toast('Shipping zone যোগ হয়েছে');
+      } catch(e){ console.error(e); toast('ত্রুটি: '+e.message); }
+    });
+
+    // ADMIN RECORDS
+    function renderAdmins(){
+      $('#adminsTable').innerHTML=admins.length?`<div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Action</th></tr></thead><tbody>${admins.map(a=>`<tr><td>${esc(a.name)}</td><td>${esc(a.email)}</td><td><span class="pill bg-emerald-100 text-emerald-700">${esc(a.role)}</span></td><td><button class="btn btn-danger delete-admin" data-id="${a.id}">Delete</button></div></td></tr>`).join('')}</tbody></table></div>`:'<div class="py-10 text-center text-slate-400">কোনো admin record নেই।</div>';
+      $$('.delete-admin').forEach(b=>b.onclick=async()=>{ if(confirm('Admin record মুছবেন?')){ try { await deleteDoc(doc(db,'adminUsers',b.dataset.id)); toast('Admin মুছে ফেলা হয়েছে'); } catch(e){ console.error(e); toast('ত্রুটি: '+e.message); } } });
+    }
+    $('#openAdminModal').onclick=()=>{$('#adminForm').reset();openModal('adminModal')};
+    $('#adminForm').addEventListener('submit',async e=>{
+      e.preventDefault();
+      try {
+        await addDoc(collection(db,'adminUsers'),{name:$('#aName').value.trim(),email:$('#aEmail').value.trim(),role:$('#aRole').value,createdAt:serverTimestamp()});
+        closeModal('adminModal');toast('Admin record যোগ হয়েছে');
+      } catch(e){ console.error(e); toast('ত্রুটি: '+e.message); }
+    });
+
+    // SETTINGS
+    async function loadSettings(){
+      for(const form of $$('.settings-form')){
+        const key=form.dataset.settings;
+        try{
+          const snap=await getDoc(doc(db,'settings',key));
+          if(snap.exists()){
+            const data=snap.data();
+            [...form.elements].forEach(el=>{
+              if(!el.name)return;
+              if(el.type==='checkbox') el.checked=!!data[el.name];
+              else if(data[el.name]!==undefined) el.value=data[el.name];
+            });
+          }
+        }catch(e){console.warn('settings',key,e)}
+      }
+    }
+    $$('.settings-form').forEach(form=>form.addEventListener('submit',async e=>{
+      e.preventDefault(); const data={};
+      try {
+        [...form.elements].forEach(el=>{if(!el.name)return;data[el.name]=el.type==='checkbox'?el.checked:(el.type==='number'?Number(el.value||0):el.value)});
+        data.updatedAt=serverTimestamp();
+        await setDoc(doc(db,'settings',form.dataset.settings),data,{merge:true});
+        toast('সেটিংস সেভ হয়েছে');
+      } catch(e){ console.error(e); toast('ত্রুটি: '+e.message); }
+    }));
+
+    // DASHBOARD + CHARTS
+    function orderDate(o){try{return o.createdAt?.toDate?o.createdAt.toDate():new Date(o.createdAt||0)}catch{return new Date(0)}}
+    function refreshDashboard(){
+      $('#statProducts').textContent=products.length; $('#statOrders').textContent=orders.length;
+      const sales=orders.filter(o=>(o.status||'pending')!=='cancelled').reduce((s,o)=>s+Number(o.total||0),0);
+      const today=new Date(); today.setHours(0,0,0,0);
+      const todaySales=orders.filter(o=>orderDate(o)>=today && (o.status||'pending')!=='cancelled').reduce((s,o)=>s+Number(o.total||0),0);
+      $('#statSales').textContent=money(sales); $('#statTodaySales').textContent=money(todaySales);
+      $('#statPending').textContent=orders.filter(o=>(o.status||'pending')==='pending').length;
+      $('#statLowStock').textContent=products.filter(p=>Number(p.stock||0)<=10).length;
+
+      $('#recentOrders').innerHTML=orders.slice().sort((a,b)=>orderDate(b)-orderDate(a)).slice(0,5).map(o=>`<div class="flex items-center justify-between border border-slate-100 rounded-xl px-3 py-2"><div><b>#${o.id.slice(0,8)}</b><p class="text-xs text-slate-400">${esc(o.customerName||'গ্রাহক')}</p></div><div class="text-right"><b>${money(o.total)}</b><div class="mt-1">${statusPill(o.status||'pending')}</div></div></div>`).join('')||'<p class="py-6 text-center">কোনো অর্ডার নেই।</p>';
+      $('#lowStockList').innerHTML=products.filter(p=>Number(p.stock||0)<=10).slice(0,6).map(p=>`<div class="flex items-center justify-between border-b border-slate-100 py-2"><span>${esc(p.name||'')}</span><span class="pill ${Number(p.stock||0)<=0?'bg-rose-100 text-rose-700':'bg-amber-100 text-amber-700'}">${Number(p.stock||0)}</span></div>`).join('')||'<p class="py-6 text-center">Low stock নেই।</p>';
+      renderCharts();
+    }
+    function renderCharts(){
+      if(!window.Chart)return;
+      const labels=[], vals=[];
+      for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);labels.push(d.toLocaleDateString('bn-BD',{day:'numeric',month:'short'}));const s=new Date(d);s.setHours(0,0,0,0);const e=new Date(s);e.setDate(e.getDate()+1);vals.push(orders.filter(o=>orderDate(o)>=s&&orderDate(o)<e&&(o.status||'pending')!=='cancelled').reduce((a,o)=>a+Number(o.total||0),0));}
+      salesChart?.destroy(); orderChart?.destroy();
+      salesChart=new Chart($('#salesChart'),{type:'line',data:{labels,datasets:[{label:'Sales',data:vals,borderColor:'#15803d',backgroundColor:'rgba(21,128,61,.08)',fill:true,tension:.35}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#eef3ef'}},x:{grid:{display:false}}}}});
+      const sts=['pending','confirmed','processing','shipped','delivered','cancelled'], counts=sts.map(s=>orders.filter(o=>(o.status||'pending')===s).length);
+      orderChart=new Chart($('#orderChart'),{type:'doughnut',data:{labels:sts,datasets:[{data:counts,backgroundColor:['#f59e0b','#6366f1','#3b82f6','#06b6d4','#22c55e','#ef4444']}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'bottom',labels:{boxWidth:10}}}}});
+    }
+
+    // REPORTS
+    function renderReports(){
+      const valid=orders.filter(o=>(o.status||'pending')!=='cancelled'), revenue=valid.reduce((s,o)=>s+Number(o.total||0),0), delivered=orders.filter(o=>o.status==='delivered').length, stock=products.reduce((s,p)=>s+Number(p.stock||0),0);
+      $('#reportRevenue').textContent=money(revenue);$('#reportDelivered').textContent=delivered;$('#reportAvg').textContent=money(valid.length?revenue/valid.length:0);$('#reportStock').textContent=stock;
+      const count={};
+      orders.forEach(o=>(o.items||[]).forEach(it=>{const n=it.product?.name||it.name||'পণ্য';count[n]=(count[n]||0)+Number(it.quantity||1)}));
+      const best=Object.entries(count).sort((a,b)=>b[1]-a[1]).slice(0,10);
+      $('#bestSelling').innerHTML=best.length?`<div class="table-wrap"><table><thead><tr><th>Product</th><th>Ordered Qty</th></tr></thead><tbody>${best.map(([n,q])=>`<tr><td>${esc(n)}</td><td>${q}</td></tr>`).join('')}</tbody></table></div>`:'<div class="py-8 text-center text-slate-400">Report data নেই।</div>';
+    }
+    $('#exportCsv').onclick=()=>{
+      const rows=[['Order ID','Customer','Phone','Total','Status','Date'],...orders.map(o=>[o.id,o.customerName||'',o.phone||'',o.total||0,o.status||'pending',tsDate(o.createdAt)])];
+      const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob=new Blob(["\uFEFF"+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=url;a.download='seedhaven-orders-report.csv';a.click();URL.revokeObjectURL(url);
+    };
+
+    // Global search
+    $('#globalSearch').addEventListener('keydown',e=>{
+      if(e.key!=='Enter')return;
+      const q=e.target.value.trim();
+      if(!q)return;
+      showView('products'); $('#productSearch').value=q; renderProducts();
+    });
+
+    window.addEventListener('DOMContentLoaded',()=>{
+      lucide.createIcons();
+      populateCategoryOptions();
+      renderCategories();
+      loadSettings();
+      refreshDashboard();
+    });
+  </script>
+</body>
+</html>
