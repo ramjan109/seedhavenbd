@@ -266,6 +266,57 @@ app.get('/api/orders', (req, res) => {
   res.json({ orders });
 });
 
+// AI Chatbot endpoint using @google/genai
+import { GoogleGenAI } from '@google/genai';
+
+app.post('/api/ai-chat', async (req, res) => {
+  const { message, productsContext, customerName, userOrders } = req.body;
+  if (!message) {
+    return res.status(400).json({ error: 'Message is required' });
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return res.json({ reply: 'দুঃখিত, এআই অ্যাসিস্ট্যান্টের এপিআই কি (API Key) কনফিগার করা নেই। অনুগ্রহ করে অ্যাডমিন সেটিংস চেক করুন।' });
+  }
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    
+    // Construct context prompt including user's purchase history
+    const systemPrompt = `You are "বীজ হাব সহকারী", a concise and fast AI shopping assistant for "Seed Haven BD".
+Customer Name: ${customerName || 'Customer'}
+Customer Previous Orders/Purchase History:
+${JSON.stringify(userOrders || [])}
+
+Rules:
+1. If and only if the customer greets you with "আসসালামু আলাইকুম" or similar greeting, reply with "ওয়ালাইকুমুস সালাম". If the customer asks a direct question like "কেমন আছেন" or about a product without salam, do NOT say "ওয়ালাইকুমুস সালাম", simply answer politely and directly in brief Bengali (maximum 2-3 short sentences).
+2. Analyze the customer's purchase history above to recommend complementary seeds, organic fertilizers, or gardening tools tailored to their past purchases.
+3. Never write long paragraphs. Be direct and helpful.
+Products available in store catalog:
+${JSON.stringify(productsContext || []).slice(0, 4000)}
+
+Customer question: ${message}`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.1-flash-lite',
+      contents: [
+        { role: 'user', parts: [{ text: systemPrompt }] }
+      ],
+      config: {
+        maxOutputTokens: 200,
+        temperature: 0.3
+      }
+    });
+
+    const reply = response.text || 'দুঃখিত, এই মুহূর্তে উত্তর দিতে পারছি না। অনুগ্রহ করে একটু পরে আবার চেষ্টা করুন।';
+    res.json({ reply });
+  } catch (error: any) {
+    console.error('AI Chat error:', error);
+    res.status(500).json({ error: error.message || 'AI generation failed', reply: 'এআই চ্যাট সার্ভারে একটি সমস্যা হয়েছে।' });
+  }
+});
+
 // Admin Panel route
 app.get(['/admin', '/admin.html'], (req, res) => {
   res.sendFile(path.join(process.cwd(), 'admin.html'));

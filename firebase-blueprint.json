@@ -35,6 +35,36 @@
         "createdAt": { "type": "string" }
       },
       "required": ["customerName", "phone", "address"]
+    },
+    "newsletterSubscriptions": {
+      "title": "Newsletter Subscriptions",
+      "description": "Subscriber email addresses",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["email"]
+    },
+    "productRatings": {
+      "title": "Product Ratings",
+      "description": "User ratings for products",
+      "properties": {
+        "productId": { "type": "string" },
+        "rating": { "type": "number" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["productId", "rating"]
+    }
+  },
+  "firestore": {
+    "newsletterSubscriptions": {
+      "schema": { "$ref": "#/entities/newsletterSubscriptions" },
+      "description": "Newsletter subscriber emails collection"
+    },
+    "productRatings": {
+      "schema": { "$ref": "#/entities/productRatings" },
+      "description": "Product ratings collection"
     }
   }
 }
